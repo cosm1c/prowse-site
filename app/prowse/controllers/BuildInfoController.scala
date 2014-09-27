@@ -4,6 +4,7 @@ import buildinfo.BuildInfo
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
 import play.api.mvc.{Action, Controller}
+import prowse.ComponentRegistry.timeService
 
 object BuildInfoController extends Controller {
 
@@ -18,7 +19,9 @@ object BuildInfoController extends Controller {
     )
 
   val getBuildInfoJson = Action {
-    Ok(jsonResponseContent)
+    timeService.dateHeader {
+      Ok(jsonResponseContent)
+    }
   }
 
 }
