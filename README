@@ -1,4 +1,8 @@
-This is your new Play application
-=================================
+prowse-site - seed project
+==========================
 
-This file will be packaged with your application, when using `activator dist`.
+Seed project for creating new web applications with Play! Framework.
+
+1. First Milestone - HTTP compliance
+
+Support HTTP spec for simple read requests and conditional read requests.
