@@ -64,7 +64,7 @@ abstract class HttpReadSpecification extends Specification with DefaultAwaitTime
 
   private def getAndHead(url: String): Response = {
     val req = WS.url(url)
-    Response(await(req.get()), await((req.head())))
+    Response(await(req.get()), await(req.head()))
   }
 
   private lazy val existsResponse: Response = getAndHead(s"http://localhost:$port/$okPath")

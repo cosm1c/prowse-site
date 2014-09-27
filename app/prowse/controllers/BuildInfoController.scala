@@ -1,12 +1,16 @@
 package prowse.controllers
 
+import java.time.{Instant, ZoneId, ZonedDateTime}
+
 import buildinfo.BuildInfo
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
-import play.api.mvc.{Action, Controller}
-import prowse.ComponentRegistry.timeService
+import play.api.mvc.Controller
+import prowse.http.{PlayCacheable, StrongETag}
 
-object BuildInfoController extends Controller {
+object BuildInfoController extends Controller with PlayCacheable {
+
+  private val buildDateTime: ZonedDateTime = Instant.parse(BuildInfo.buildInstant).atZone(ZoneId.of("GMT"))
 
   val jsonResponseContent: JsValue =
     toJson(
@@ -18,10 +22,12 @@ object BuildInfoController extends Controller {
       )
     )
 
-  val getBuildInfoJson = Action {
-    timeService.dateHeader {
-      Ok(jsonResponseContent)
-    }
-  }
+  val getBuildInfoJson = staticConditionalAction(
+    StaticCacheableContent(
+      StrongETag(BuildInfo.gitChecksum),
+      buildDateTime,
+      jsonResponseContent
+    )
+  )
 
 }
