@@ -1,0 +1,18 @@
+@(title: String, description: String, author: String)(mainContent: Html)@*
+*
+* Minimal markup for a standalone HTML document.
+*
+*@<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>@title</title>
+    <meta name="description" content="@description"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="author" content="@author"/>
+    <meta name="robots" content="NOODP,NOYDIR"/>
+</head>
+<body>
+<main>@mainContent</main>
+</body>
+</html>

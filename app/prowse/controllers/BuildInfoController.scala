@@ -30,4 +30,12 @@ object BuildInfoController extends Controller with PlayCacheable {
     )
   )
 
+  val getBuildInfoHtml = staticConditionalAction(
+    StaticCacheableContent(
+      StrongETag(BuildInfo.gitChecksum),
+      buildDateTime,
+      views.html.buildInfo.apply()
+    )
+  )
+
 }

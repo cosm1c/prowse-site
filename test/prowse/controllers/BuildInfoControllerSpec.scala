@@ -21,6 +21,11 @@ class BuildInfoControllerSpec extends PlaySpecification {
       (response.status mustEqual OK) and
         (response.json mustEqual BuildInfoController.jsonResponseContent)
     }
+
+    "run in a server at path 'buildInfo.html'" in new WithServer {
+      val response: WSResponse = await(WS.url(s"http://localhost:$port/buildInfo.html").get())
+      response.status mustEqual OK
+    }
   }
 
 }
