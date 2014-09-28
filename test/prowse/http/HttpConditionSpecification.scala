@@ -452,8 +452,15 @@ abstract class HttpConditionSpecification extends Specification with DefaultAwai
   private def dateHeaderFromHead: ZonedDateTime =
     responseFromHead.header(DATE).flatMap(parseHttpDateString(_).toOption).get
 
-  private def lastModifiedHeaderFromGet: ZonedDateTime =
-    responseFromGet.header(LAST_MODIFIED).flatMap(parseHttpDateString(_).toOption).get
+  private def lastModifiedHeaderFromGet: ZonedDateTime = {
+    val maybeHeader: Option[String] = responseFromGet.header(LAST_MODIFIED)
+    (maybeHeader must beSome).setMessage("No Last-Modified header present in initial response").orThrow
+
+    val maybeTime: Option[ZonedDateTime] = maybeHeader.flatMap(parseHttpDateString(_).toOption)
+    (maybeTime must beSome).setMessage(s"Invalid Http DateTime $maybeHeader").orThrow
+
+    maybeTime.get
+  }
 
   private def lastModifiedHeaderFromHead: ZonedDateTime =
     responseFromHead.header(LAST_MODIFIED).flatMap(parseHttpDateString(_).toOption).get
