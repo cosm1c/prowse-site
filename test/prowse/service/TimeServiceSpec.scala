@@ -31,7 +31,7 @@ class TimeServiceSpec extends Specification with Mockito {
   }
 
   def parseDateString = {
-    val validDateString = "Sun, 16 Mar 2014 17:00:16 GMT"
+    val validDateString = "Sun, 28 Sep 2014 10:02:35 GMT"
     timeServiceComponent.timeService.parseDate(validDateString) must beSuccessfulTry
   }
 

@@ -10,7 +10,7 @@ import play.api.http.Status._
 import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Helpers}
 
-import scala.util.Success
+import scala.util.{Success, Try}
 
 abstract class HttpConditionSpecification extends Specification with DefaultAwaitTimeout with FutureAwaits with HeaderNames with HttpHelpers {
 
@@ -447,27 +447,35 @@ abstract class HttpConditionSpecification extends Specification with DefaultAwai
     }
 
   private def dateHeaderFromGet: ZonedDateTime =
-    responseFromGet.header(DATE).flatMap(parseHttpDateString(_).toOption).get
+    readDateHeader(responseFromGet, DATE, "initial GET request")
 
   private def dateHeaderFromHead: ZonedDateTime =
-    responseFromHead.header(DATE).flatMap(parseHttpDateString(_).toOption).get
+    readDateHeader(responseFromHead, DATE, "initial HEAD request")
 
-  private def lastModifiedHeaderFromGet: ZonedDateTime = {
-    val maybeHeader: Option[String] = responseFromGet.header(LAST_MODIFIED)
-    (maybeHeader must beSome).setMessage("No Last-Modified header present in initial response").orThrow
+  private def lastModifiedHeaderFromGet: ZonedDateTime =
+    readDateHeader(responseFromGet, LAST_MODIFIED, "initial GET request")
 
-    val maybeTime: Option[ZonedDateTime] = maybeHeader.flatMap(parseHttpDateString(_).toOption)
-    (maybeTime must beSome).setMessage(s"Invalid Http DateTime $maybeHeader").orThrow
+  private def lastModifiedHeaderFromHead: ZonedDateTime =
+    readDateHeader(responseFromHead, LAST_MODIFIED, "initial HEAD request")
+
+  private def readDateHeader(response: WSResponse, headerName: String, requestDescription: String): ZonedDateTime = {
+    val header: String = headerValue(response, headerName, requestDescription)
+
+    val maybeTime: Try[ZonedDateTime] = parseHttpDateString(header)
+    (maybeTime must beSuccessfulTry).setMessage(s"""Invalid Http DateTime "$header" in $requestDescription - ${maybeTime}""").orThrow
 
     maybeTime.get
   }
 
-  private def lastModifiedHeaderFromHead: ZonedDateTime =
-    responseFromHead.header(LAST_MODIFIED).flatMap(parseHttpDateString(_).toOption).get
+  private def etagHeaderFromGet: String = headerValue(responseFromGet, ETAG, "initial GET request")
 
-  private def etagHeaderFromGet: String = responseFromGet.header(ETAG).get
+  private def etagHeaderFromHead: String = headerValue(responseFromHead, ETAG, "initial GET request")
 
-  private def etagHeaderFromHead: String = responseFromHead.header(ETAG).get
+  private def headerValue(response: WSResponse, headerName: String, requestDescription: String): String = {
+    val maybeHeader: Option[String] = response.header(headerName)
+    (maybeHeader must beSome).setMessage(s"No $headerName header present in $requestDescription").orThrow
+    maybeHeader.get
+  }
 
   private def groupDirectives(value: String) =
     value
