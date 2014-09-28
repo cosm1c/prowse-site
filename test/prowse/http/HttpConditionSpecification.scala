@@ -462,7 +462,7 @@ abstract class HttpConditionSpecification extends Specification with DefaultAwai
     val header: String = headerValue(response, headerName, requestDescription)
 
     val maybeTime: Try[ZonedDateTime] = parseHttpDateString(header)
-    (maybeTime must beSuccessfulTry).setMessage(s"""Invalid Http DateTime "$header" in $requestDescription - ${maybeTime}""").orThrow
+    (maybeTime must beSuccessfulTry).setMessage(s"""Invalid Http DateTime "$header" in $requestDescription - $maybeTime""").orThrow
 
     maybeTime.get
   }

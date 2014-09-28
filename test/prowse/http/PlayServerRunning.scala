@@ -6,7 +6,7 @@ import play.api.test.{Helpers, TestServer}
 
 trait PlayServerRunning extends SpecificationLike {
 
-  override def map(fs: => Fragments): Fragments = Step(beforeAll) ^ fs ^ Step(afterAll)
+  override def map(fs: => Fragments): Fragments = Step(beforeAll()) ^ fs ^ Step(afterAll())
 
   private lazy val server = createTestServer
 
