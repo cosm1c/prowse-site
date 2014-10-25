@@ -142,15 +142,12 @@ object ETag {
 
   private def findLastNonWhitespace(value: String): Int = findLastNonWhitespace(value, value.length - 1)
 
-  private def findLastNonWhitespace(value: String, offset: Int): Int = {
-    var result: Int = offset
-    while (result >= 0) {
-      if (!Character.isWhitespace(value.charAt(result))) {
-        return result
-      }
-      result = result - 1
+  @tailrec private def findLastNonWhitespace(value: String, offset: Int): Int = {
+    if (offset < 0 || !Character.isWhitespace(value.charAt(offset))) {
+      offset
+    } else {
+      findLastNonWhitespace(value, offset - 1)
     }
-    result
   }
 
 }

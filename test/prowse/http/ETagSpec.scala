@@ -108,7 +108,8 @@ class ETagSpec extends Specification with matcher.DataTables {
 
   def e11 = {
     val expectedResult: Seq[ETag] = Seq(StrongETag("Valid", "\"Valid\""), StrongETag("", "\"\""), StrongETag("Valid2", "\"Valid2\""))
-    ETag.parseETagsHeader( """"Valid", "", "Valid2"""") must beSome.which(_ == expectedResult)
+    (ETag.parseETagsHeader( """"Valid", "", "Valid2"""") must beSome.which(_ == expectedResult)) and
+    (ETag.parseETagsHeader("") must beSome.which(_ == Nil))
   }
 
   def e12 = {
