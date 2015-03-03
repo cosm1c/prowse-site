@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 import scala.annotation.implicitNotFound
 import scala.language.implicitConversions
 
-trait Cacheable {
+object Cacheable {
 
   type LastModified = ZonedDateTime
 
@@ -31,7 +31,7 @@ trait Cacheable {
     def cacheValidation(query: Q): Option[QueryCondition]
   }
 
-  protected def preconditionCheck[C, Q: ConditionalQuery](optionalContent: Option[CacheableContent[C]])(request: Q): Boolean = {
+  def preconditionCheck[C, Q: ConditionalQuery](optionalContent: Option[CacheableContent[C]])(request: Q): Boolean = {
     optionalContent match {
       case Some(content) => preconditionCheck(content)(request)
       case None => implicitly[ConditionalQuery[Q]].precondition(request) match {
@@ -43,7 +43,7 @@ trait Cacheable {
 
   // date comparisons are done to second granularity as HTTP Dates only have that resolution
 
-  protected def preconditionCheck[C, Q: ConditionalQuery](content: CacheableContent[C])(request: Q): Boolean = {
+  def preconditionCheck[C, Q: ConditionalQuery](content: CacheableContent[C])(request: Q): Boolean = {
     implicitly[ConditionalQuery[Q]].precondition(request).forall({
       case Left(headerIfMatchETags) =>
         headerIfMatchETags.exists(ifMatchETag => ifMatchETag strongComparison content.eTag)
@@ -52,7 +52,7 @@ trait Cacheable {
     })
   }
 
-  protected def cacheValidationCheck[C, Q: ConditionalQuery](content: CacheableContent[C])(request: Q): Boolean = {
+  def cacheValidationCheck[C, Q: ConditionalQuery](content: CacheableContent[C])(request: Q): Boolean = {
     implicitly[ConditionalQuery[Q]].cacheValidation(request).exists({
       case Left(headerIfNoneMatchETags) =>
         headerIfNoneMatchETags.exists(ifNoneMatchETag => ifNoneMatchETag weakComparison content.eTag)
@@ -61,7 +61,7 @@ trait Cacheable {
     })
   }
 
-  protected def preconditionCheckWhenMissing[Q: ConditionalQuery](request: Q): Boolean = {
+  def preconditionCheckWhenMissing[Q: ConditionalQuery](request: Q): Boolean = {
     implicitly[ConditionalQuery[Q]].precondition(request).
       exists(_.left.exists(starETagHeader.==))
   }

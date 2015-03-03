@@ -6,8 +6,12 @@ import play.api.http.Writeable
 import play.api.mvc.Results._
 import play.api.mvc._
 import prowse.ComponentRegistry._
+import prowse.http.Cacheable._
 
-trait PlayCacheable extends Cacheable {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+object PlayCacheable {
 
   implicit object ConditionalQueryRequestContext extends ConditionalQuery[Request[AnyContent]] {
 
@@ -63,6 +67,13 @@ trait PlayCacheable extends Cacheable {
           okResponse
       }
     }
+  }
+
+  def conditionalAsyncAction[C: Writeable](block: => Future[Option[CacheableContent[C]]]): Action[AnyContent] = Action.async { request =>
+    block.map {
+      case Some(content) => resultIsCacheableContent(request, content)
+      case None => resultIsMissing(request)
+    }.map(timeService.dateHeader(_))
   }
 
   def conditionalAction[C: Writeable](block: => Option[CacheableContent[C]]): Action[AnyContent] = Action { request =>

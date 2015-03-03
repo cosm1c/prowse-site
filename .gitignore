@@ -28,6 +28,7 @@ project/plugins/project/
 /dist/
 *.class
 *.log
+*.sc
 lib_managed/
 src_managed/
 .scala_dependencies

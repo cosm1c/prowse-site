@@ -6,11 +6,12 @@ import buildinfo.BuildInfo
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
 import play.api.mvc.Controller
-import prowse.http.{PlayCacheable, StrongETag}
+import prowse.http.Cacheable._
+import prowse.http.PlayCacheable._
+import prowse.http.StrongETag
+import prowse.domain.BuildInfoHelper.buildDateTime
 
-object BuildInfoController extends Controller with PlayCacheable {
-
-  private val buildDateTime: ZonedDateTime = Instant.parse(BuildInfo.buildInstant).atZone(ZoneId.of("GMT"))
+object BuildInfoController extends Controller {
 
   val jsonResponseContent: JsValue =
     toJson(

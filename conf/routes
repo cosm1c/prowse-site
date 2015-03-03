@@ -6,12 +6,15 @@
 #GET     /                           controllers.Application.index
 
 # BuildInfo - build information (prefer one Content-Type per uri)
-GET     /buildInfo                  prowse.controllers.BuildInfoController.getBuildInfoJson
-GET     /buildInfo.html             prowse.controllers.BuildInfoController.getBuildInfoHtml
+GET        /buildInfo              prowse.controllers.BuildInfoController.getBuildInfoJson
+GET        /buildInfo.html         prowse.controllers.BuildInfoController.getBuildInfoHtml
 
 # SEO files
-GET     /crossdomain.xml            controllers.Assets.at(path="/public", file="crossdomain.xml")
-GET     /robots.txt                 controllers.Assets.at(path="/public", file="robots.txt")
+GET        /crossdomain.xml        controllers.Assets.at(path="/public", file="crossdomain.xml")
+GET        /robots.txt             controllers.Assets.at(path="/public", file="robots.txt")
+
+# Articles
+GET        /article/*path          @prowse.controllers.HtmlArticleController.get(path)
 
 # Map static resources from the /public folder to the /assets URL path
 #GET     /assets/*file               controllers.Assets.at(path="/public", file)

@@ -5,6 +5,8 @@ import java.time.ZonedDateTime
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Controller
 import play.api.test.{FakeApplication, Helpers, TestServer}
+import prowse.http.Cacheable._
+import prowse.http.PlayCacheable._
 import prowse.http._
 
 import scala.language.reflectiveCalls
@@ -16,7 +18,7 @@ class ExampleHttpConditionSpec extends HttpConditionSpecification with PlayServe
   override val okPath: String = "exists"
   override val missingPath: Option[String] = Some(missingPathString)
 
-  private val controller = new Controller with PlayCacheable {
+  private val controller = new Controller {
     def exists = conditionalAction(
       Some(StaticCacheableContent(
         StrongETag("ETAGVALUE", "\"ETAGVALUE\""),
