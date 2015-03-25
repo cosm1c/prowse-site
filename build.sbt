@@ -1,3 +1,6 @@
+import com.typesafe.sbt.SbtNativePackager.NativePackagerKeys._
+import com.typesafe.sbt.SbtNativePackager._
+
 name := """prowse-site"""
 
 version := "1.0-SNAPSHOT"
@@ -12,6 +15,14 @@ libraryDependencies ++= Seq(
   "javax.inject" % "javax.inject" % "1",
   "org.mockito" % "mockito-core" % "1.10.19" % "test"
 )
+
+packageArchetype.java_server
+
+maintainer := "Cory Prowse <cory@prowse.com>"
+
+dockerBaseImage := "dockerfile/java:oracle-java8"
+
+dockerExposedPorts in Docker := Seq(9000, 9443)
 
 //------------------------------------------------------------------------------
 
