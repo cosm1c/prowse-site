@@ -28,7 +28,7 @@ object PlayCacheable {
 
       def optionalETag: Option[QueryCondition] =
         headers.get(eTagHeaderName)
-          .flatMap(ETag.parseETagsHeader)
+          .map(ETag.parseETagsHeader)
           .map(Left(_))
 
       def optionalLastModified: Option[QueryCondition] =
@@ -106,7 +106,7 @@ object PlayCacheable {
 
   private def cachingHeadersFor[C](content: CacheableContent[C]) =
     Seq(
-      ETAG -> content.eTag.display,
+      ETAG -> content.eTag.toString,
       LAST_MODIFIED -> timeService.formatHttpDate(content.lastModified.toInstant),
       // TODO: Cache-Control header should be dynamic (allow to change with server load)
       // minimum retention of 1 second as that is resolution of HTTP dates

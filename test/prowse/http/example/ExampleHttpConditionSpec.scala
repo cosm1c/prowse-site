@@ -21,7 +21,7 @@ class ExampleHttpConditionSpec extends HttpConditionSpecification with PlayServe
   private val controller = new Controller {
     def exists = conditionalAction(
       Some(StaticCacheableContent(
-        StrongETag("ETAGVALUE", "\"ETAGVALUE\""),
+        StrongETag("ETAGVALUE"),
         lastModified,
         Json.obj(
           "hello" -> "world"

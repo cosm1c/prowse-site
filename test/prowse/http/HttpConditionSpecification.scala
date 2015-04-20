@@ -441,10 +441,7 @@ abstract class HttpConditionSpecification extends Specification with DefaultAwai
     lastModifiedHeaderFromGet === lastModifiedHeaderFromHead
 
   private def hasStrongETag =
-    ETag.parse(responseFromGet.header(ETAG).get) match {
-      case Success(StrongETag(_, _)) => success
-      case _ => Failure("Not a Strong ETag")
-    }
+    ETag.parse(responseFromGet.header(ETAG).get) must beRight(beAnInstanceOf[StrongETag])
 
   private def dateHeaderFromGet: ZonedDateTime =
     readDateHeader(responseFromGet, DATE, "initial GET request")

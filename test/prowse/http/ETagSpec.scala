@@ -34,114 +34,111 @@ class ETagSpec extends Specification with matcher.DataTables {
   }
 
   def e1 = {
-    StrongETag("strongValue").display === "\"strongValue\""
+    StrongETag("strongValue").toString === "\"strongValue\""
   }
 
   def e2 = {
-    WeakETag("weakValue").display === "W/\"weakValue\""
+    WeakETag("weakValue").toString === "W/\"weakValue\""
   }
 
   def e3 = {
-    (ETag.parse("W/\"weakValue\"") must beSuccessfulTry.withValue(WeakETag("weakValue", "W/\"weakValue\""))) and
-      (ETag.parse("W/\"weakValue\" ") must beSuccessfulTry.withValue(WeakETag("weakValue", "W/\"weakValue\""))) and
-      (ETag.parse(" W/\"weakValue\"") must beSuccessfulTry.withValue(WeakETag("weakValue", "W/\"weakValue\"")))
+    (ETag.parse("W/\"weakValue\"") must beRight(WeakETag("weakValue"))) and
+      (ETag.parse("W/\"weakValue\" ") must beRight(WeakETag("weakValue"))) and
+      (ETag.parse(" W/\"weakValue\"") must beRight(WeakETag("weakValue")))
   }
 
   def e4 = {
-    (ETag.parse("\"strongValue\"") must beSuccessfulTry.withValue(StrongETag("strongValue", "\"strongValue\""))) and
-      (ETag.parse(" \"strongValue\"") must beSuccessfulTry.withValue(StrongETag("strongValue", "\"strongValue\""))) and
-      (ETag.parse("\"strongValue\" ") must beSuccessfulTry.withValue(StrongETag("strongValue", "\"strongValue\"")))
+    (ETag.parse("\"strongValue\"") must beRight(StrongETag("strongValue"))) and
+      (ETag.parse(" \"strongValue\"") must beRight(StrongETag("strongValue"))) and
+      (ETag.parse("\"strongValue\" ") must beRight(StrongETag("strongValue")))
   }
 
   def e5 = {
-    (ETag.parse("noStrongStartQuote\"") must throwA[java.lang.IllegalArgumentException]) and
-      (ETag.parse("\"noStrongEndQuote") must throwA[java.lang.IllegalArgumentException]) and
-      (ETag.parse("W/noWeakStartQuote") must throwA[java.lang.IllegalArgumentException]) and
-      (ETag.parse("W/\"noWeakEndQuote") must throwA[java.lang.IllegalArgumentException])
+    (ETag.parse("noStrongStartQuote\"") must beLeft) and
+      (ETag.parse("\"noStrongEndQuote") must beLeft) and
+      (ETag.parse("W/noWeakStartQuote") must beLeft) and
+      (ETag.parse("W/\"noWeakEndQuote") must beLeft)
   }
 
   def e6 = {
     val eTagDisplay = "\"" + allowedETagChars + '"'
 
-    ETag.parse(eTagDisplay) must beSuccessfulTry.withValue(StrongETag(allowedETagChars, eTagDisplay))
+    ETag.parse(eTagDisplay) must beRight(StrongETag(allowedETagChars))
   }
 
   def e7 = {
     val emptyETagDisplay: String = "\"\""
-    ETag.parse(emptyETagDisplay) must beSuccessfulTry.withValue(StrongETag("", emptyETagDisplay))
+    ETag.parse(emptyETagDisplay) must beRight(StrongETag(""))
   }
 
   def e8 = {
-    (ETag.parse("*") must beSuccessfulTry.withValue(StarETag)) and
-      (ETag.parse(" *") must beSuccessfulTry.withValue(StarETag)) and
-      (ETag.parse("* ") must beSuccessfulTry.withValue(StarETag))
+    (ETag.parse("*") must beRight(StarETag)) and
+      (ETag.parse(" *") must beRight(StarETag)) and
+      (ETag.parse("* ") must beRight(StarETag))
   }
 
   def e9 = {
     val eTagDisplay = "\"" + allowedETagChars + '"'
     val eTagHeaderValue: String = s"""$eTagDisplay, $eTagDisplay, """""
-    val expectedResult: Seq[ETag] = Seq(StrongETag(allowedETagChars, eTagDisplay), StrongETag(allowedETagChars, eTagDisplay), StrongETag("", "\"\""))
+    val expectedResult: Seq[ETag] = Seq(StrongETag(allowedETagChars), StrongETag(allowedETagChars), StrongETag(""))
 
-    val eTagsHeader: Option[Seq[ETag]] = ETag.parseETagsHeader(eTagHeaderValue)
-    (eTagsHeader must beSome) and
-      (eTagsHeader.get === expectedResult)
+    ETag.parseETagsHeader(eTagHeaderValue) === expectedResult
   }
 
   def e10 = {
-    (ETag.parseETagsHeader(" ") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", INVALID, "Valid2"""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", /"INVALID", "Valid2"""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", W"INVALID", "Valid2"""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", W/INVALID, "Valid2"""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", W/"INVALID, "Valid2"""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", "Valid2",""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", "INVALID""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid",""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """"Valid", """) must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( ""","Valid"""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """ ,"Valid"""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader("\"") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """a*""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """*a""") must beSome.which(_.isEmpty)) and
-      (ETag.parseETagsHeader( """*, "INVALID""") must beSome.which(_.isEmpty))
+    (ETag.parseETagsHeader(" ") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", INVALID, "Valid2"""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", /"INVALID", "Valid2"""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", W"INVALID", "Valid2"""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", W/INVALID, "Valid2"""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", W/"INVALID, "Valid2"""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", "Valid2",""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", "INVALID""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid",""") must beEmpty) and
+      (ETag.parseETagsHeader( """"Valid", """) must beEmpty) and
+      (ETag.parseETagsHeader( ""","Valid"""") must beEmpty) and
+      (ETag.parseETagsHeader( """ ,"Valid"""") must beEmpty) and
+      (ETag.parseETagsHeader("\"") must beEmpty) and
+      (ETag.parseETagsHeader( """a*""") must beEmpty) and
+      (ETag.parseETagsHeader( """*a""") must beEmpty) and
+      (ETag.parseETagsHeader( """*, "INVALID""") must beEmpty)
   }
 
   def e11 = {
-    val expectedResult: Seq[ETag] = Seq(StrongETag("Valid", "\"Valid\""), StrongETag("", "\"\""), StrongETag("Valid2", "\"Valid2\""))
-    (ETag.parseETagsHeader( """"Valid", "", "Valid2"""") must beSome.which(_ == expectedResult)) and
-    (ETag.parseETagsHeader("") must beSome.which(_ == Nil))
+    val expectedResult: Seq[ETag] = Seq(StrongETag("Valid"), StrongETag(""), StrongETag("Valid2"))
+    (ETag.parseETagsHeader( """"Valid", "", "Valid2"""") === expectedResult) and
+      (ETag.parseETagsHeader("") === Nil)
   }
 
   def e12 = {
-    val strongThenWeak: Seq[ETag] = Seq(StrongETag("STRONG", "\"STRONG\""), WeakETag("WEAK", "W/\"WEAK\""))
-    val weakThenStrong: Seq[ETag] = Seq(WeakETag("WEAK", "W/\"WEAK\""), StrongETag("STRONG", "\"STRONG\""))
-    (ETag.parseETagsHeader( """"STRONG", W/"WEAK"""") must beSome.which(_ == strongThenWeak)) and
-      (ETag.parseETagsHeader( """"STRONG" ,W/"WEAK"""") must beSome.which(_ == strongThenWeak)) and
-      (ETag.parseETagsHeader( """"STRONG" , W/"WEAK"""") must beSome.which(_ == strongThenWeak)) and
-      (ETag.parseETagsHeader( """"STRONG",W/"WEAK"""") must beSome.which(_ == strongThenWeak)) and
-      (ETag.parseETagsHeader( """ "STRONG",W/"WEAK"""") must beSome.which(_ == strongThenWeak)) and
-      (ETag.parseETagsHeader( """"STRONG",W/"WEAK" """) must beSome.which(_ == strongThenWeak)) and
-      (ETag.parseETagsHeader( """W/"WEAK","STRONG"""") must beSome.which(_ == weakThenStrong)) and
-      (ETag.parseETagsHeader( """W/"WEAK" ,"STRONG"""") must beSome.which(_ == weakThenStrong)) and
-      (ETag.parseETagsHeader( """W/"WEAK", "STRONG"""") must beSome.which(_ == weakThenStrong)) and
-      (ETag.parseETagsHeader( """W/"WEAK" , "STRONG"""") must beSome.which(_ == weakThenStrong)) and
-      (ETag.parseETagsHeader( """ W/"WEAK","STRONG"""") must beSome.which(_ == weakThenStrong)) and
-      (ETag.parseETagsHeader( """W/"WEAK","STRONG" """) must beSome.which(_ == weakThenStrong))
+    val strongThenWeak: Seq[ETag] = Seq(StrongETag("STRONG"), WeakETag("WEAK"))
+    val weakThenStrong: Seq[ETag] = Seq(WeakETag("WEAK"), StrongETag("STRONG"))
+    (ETag.parseETagsHeader( """"STRONG", W/"WEAK"""") === strongThenWeak) and
+      (ETag.parseETagsHeader( """"STRONG" ,W/"WEAK"""") === strongThenWeak) and
+      (ETag.parseETagsHeader( """"STRONG" , W/"WEAK"""") === strongThenWeak) and
+      (ETag.parseETagsHeader( """"STRONG",W/"WEAK"""") === strongThenWeak) and
+      (ETag.parseETagsHeader( """ "STRONG",W/"WEAK"""") === strongThenWeak) and
+      (ETag.parseETagsHeader( """"STRONG",W/"WEAK" """) === strongThenWeak) and
+      (ETag.parseETagsHeader( """W/"WEAK","STRONG"""") === weakThenStrong) and
+      (ETag.parseETagsHeader( """W/"WEAK" ,"STRONG"""") === weakThenStrong) and
+      (ETag.parseETagsHeader( """W/"WEAK", "STRONG"""") === weakThenStrong) and
+      (ETag.parseETagsHeader( """W/"WEAK" , "STRONG"""") === weakThenStrong) and
+      (ETag.parseETagsHeader( """ W/"WEAK","STRONG"""") === weakThenStrong) and
+      (ETag.parseETagsHeader( """W/"WEAK","STRONG" """) === weakThenStrong)
   }
 
   def e13 = {
-    def isStarETag(header: Option[Seq[ETag]]) = (header must beSome) and (header.get === Seq(StarETag))
+    def isStarETag(header: Seq[ETag]) = header === Seq(StarETag)
 
-    val simple: Option[Seq[ETag]] = ETag.parseETagsHeader("*")
-    val leadingSpace: Option[Seq[ETag]] = ETag.parseETagsHeader(" *")
-    val trailingSpace: Option[Seq[ETag]] = ETag.parseETagsHeader("* ")
+    val simple: Seq[ETag] = ETag.parseETagsHeader("*")
+    val leadingSpace: Seq[ETag] = ETag.parseETagsHeader(" *")
+    val trailingSpace: Seq[ETag] = ETag.parseETagsHeader("* ")
 
     isStarETag(simple) and isStarETag(leadingSpace) and isStarETag(trailingSpace)
   }
 
   def e14 = {
-    (ETag.parseETagsHeader("asd*") must beSome) and
-      ETag.parseETagsHeader("asd*").get.isEmpty
+    ETag.parseETagsHeader("asd*") must beEmpty
   }
 
   private val allowedETagChars: String = new String((Seq(0x21) ++ Range(0x23, 0x7E).toSeq).map(_.toChar).toArray)

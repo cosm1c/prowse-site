@@ -1,138 +1,132 @@
 package prowse.http
 
 import scala.annotation.tailrec
-import scala.util.{Success, Try}
 
 /**
  * @see http://tools.ietf.org/html/draft-ietf-httpbis-p4-conditional#section-2.3
  */
-sealed trait ETag {
-  def value: String
+sealed abstract class ETag(val value: String) {
 
-  def display: String
-
-  def strongComparison(that: ETag): Boolean = (this, that) match {
-    case (StrongETag(lVal, _), StrongETag(rVal, _)) => lVal == rVal
-    case _ => false
-  }
+  def strongComparison(that: ETag): Boolean
 
   def weakComparison(that: ETag): Boolean = this.value == that.value
 }
 
-case class StrongETag(override val value: String, override val display: String) extends ETag {
-  def this(value: String) = this(value, s"""\"$value\"""")
+case class StrongETag(override val value: String) extends ETag(value) {
+
+  // TODO: Can we optimise away typecheck? (overloading?)
+  override def strongComparison(that: ETag): Boolean = that match {
+    case StrongETag(rVal) => value == rVal
+    case _ => false
+  }
+
+  override def toString: String = s"""\"$value\""""
 }
 
-case class WeakETag(override val value: String, override val display: String) extends ETag {
-  def this(value: String) = this(value, s"""W/\"$value\"""")
+case class WeakETag(override val value: String) extends ETag(value) {
+
+  override def strongComparison(that: ETag): Boolean = false
+
+  override def toString: String = s"""W/\"$value\""""
 }
 
-object StarETag extends ETag {
-  val value = "*"
-
-  val display = value
+object StarETag extends ETag("*") {
 
   override def strongComparison(that: ETag): Boolean = true
 
   override def weakComparison(that: ETag): Boolean = true
 }
 
-object StrongETag {
-  def apply(string: String): StrongETag = {
-    new StrongETag(string)
-  }
-}
-
-object WeakETag {
-  def apply(string: String): WeakETag = {
-    new WeakETag(string)
-  }
-}
+case class InvalidETag(msg: String)
 
 object ETag {
-  private val STAR_ETAG = Success(StarETag)
-  private val EMPTY_HEADER: Option[Seq[ETag]] = Some(Nil)
-  private val STAR_HEADER: Option[Seq[ETag]] = Some(Seq(StarETag))
+  private val SUCCESSFUL_STAR_ETAG = Right(StarETag)
+  private val STAR_HEADER_SEQ: Seq[ETag] = Seq(StarETag)
+  private val EMPTY_ERROR = Left(InvalidETag("Empty value for ETag"))
+  private val MISSING_OPEN_QUOTE_ERROR = Left(InvalidETag("Illegal value for ETag - no open quote"))
+  private val MISSING_QUOTES_ERROR = Left(InvalidETag("Illegal value for ETag - not enclosed in quotes"))
+  private val INVALID_STRONG_PREFIX_ERROR = Left(InvalidETag("Illegal value for ETag - unknown leading text for StrongETag"))
+  private val INVALID_WEAK_PREFIX_ERROR = Left(InvalidETag("Illegal value for ETag - unknown leading text for WeakETag"))
 
-  def parse(value: String): Try[ETag] = {
+  def parse(value: String): Either[InvalidETag, ETag] = {
     val endIndex = findLastNonWhitespace(value)
 
     if (endIndex == -1)
-      throw new IllegalArgumentException("Empty value for ETag")
+      EMPTY_ERROR
 
     else {
       val startQuoteIndex = value.lastIndexOf('"', endIndex - 1)
 
       if (startQuoteIndex == -1) {
         if (value.charAt(endIndex) == '*')
-          STAR_ETAG
+          SUCCESSFUL_STAR_ETAG
         else
-          throw new IllegalArgumentException(s"Illegal value for ETag - no open quote: $value")
+          MISSING_OPEN_QUOTE_ERROR
 
       } else if (value.charAt(startQuoteIndex) != '"' || value.charAt(endIndex) != '"') {
-        throw new IllegalArgumentException(s"Illegal value for ETag: $value")
+        MISSING_QUOTES_ERROR
 
       } else {
         if (startQuoteIndex > 1
           && value.charAt(startQuoteIndex - 1) == '/'
           && value.charAt(startQuoteIndex - 2) == 'W') {
           if (findLastNonWhitespace(value, startQuoteIndex - 3) != -1)
-            throw new IllegalArgumentException(s"Illegal value for ETag: $value")
+            INVALID_STRONG_PREFIX_ERROR
           else
-            Success(WeakETag(value.substring(startQuoteIndex + 1, endIndex), value.substring(startQuoteIndex - 2, endIndex + 1)))
+            Right(WeakETag(value.substring(startQuoteIndex + 1, endIndex)))
 
         } else {
           if (findLastNonWhitespace(value, startQuoteIndex - 1) != -1)
-            throw new IllegalArgumentException(s"Illegal value for ETag: $value")
+            INVALID_WEAK_PREFIX_ERROR
           else
-            Success(StrongETag(value.substring(startQuoteIndex + 1, endIndex), value.substring(startQuoteIndex, endIndex + 1)))
+            Right(StrongETag(value.substring(startQuoteIndex + 1, endIndex)))
         }
       }
     }
   }
 
-  def parseETagsHeader(header: String): Option[Seq[ETag]] = {
+  def parseETagsHeader(header: String): Seq[ETag] = {
     val currIndex = findLastNonWhitespace(header)
     if (currIndex == -1) {
-      EMPTY_HEADER
+      Nil
 
     } else {
       header.charAt(currIndex) match {
         case '"' => parseETagHeaderEntry(List(), header, currIndex)
-        case '*' if findLastNonWhitespace(header, currIndex - 1) == -1 => STAR_HEADER
-        case _ => EMPTY_HEADER
+        case '*' if findLastNonWhitespace(header, currIndex - 1) == -1 => STAR_HEADER_SEQ
+        case _ => Nil
       }
     }
   }
 
-  @tailrec private def parseETagHeaderEntry(eTags: List[ETag], header: String, endIndex: Int): Option[Seq[ETag]] = {
+  @tailrec private def parseETagHeaderEntry(eTags: List[ETag], header: String, endIndex: Int): Seq[ETag] = {
     val startQuoteIndex = header.lastIndexOf('"', endIndex - 1)
     if (startQuoteIndex == -1) {
-      EMPTY_HEADER
+      Nil
 
     } else {
       def appendETag: (List[ETag], Int) =
         if (startQuoteIndex > 1
           && header.charAt(startQuoteIndex - 1) == '/'
           && header.charAt(startQuoteIndex - 2) == 'W')
-          (WeakETag(header.substring(startQuoteIndex + 1, endIndex), header.substring(startQuoteIndex - 2, endIndex + 1)) :: eTags,
+          (WeakETag(header.substring(startQuoteIndex + 1, endIndex)) :: eTags,
             findLastNonWhitespace(header, startQuoteIndex - 3))
         else
-          (StrongETag(header.substring(startQuoteIndex + 1, endIndex), header.substring(startQuoteIndex, endIndex + 1)) :: eTags,
+          (StrongETag(header.substring(startQuoteIndex + 1, endIndex)) :: eTags,
             findLastNonWhitespace(header, startQuoteIndex - 1))
 
       appendETag match {
         case (newETags, nextIndex) =>
           if (nextIndex == -1)
-            Some(newETags)
+            newETags
 
           else if (header.charAt(nextIndex) != ',')
-            EMPTY_HEADER
+            Nil
 
           else {
             val nextEndIndex = findLastNonWhitespace(header, nextIndex - 1)
             if (nextEndIndex == -1 || header.charAt(nextEndIndex) != '"')
-              EMPTY_HEADER
+              Nil
             else
               parseETagHeaderEntry(newETags, header, nextEndIndex)
           }
@@ -143,11 +137,14 @@ object ETag {
   private def findLastNonWhitespace(value: String): Int = findLastNonWhitespace(value, value.length - 1)
 
   @tailrec private def findLastNonWhitespace(value: String, offset: Int): Int = {
-    if (offset < 0 || !Character.isWhitespace(value.charAt(offset))) {
+    if (offset < 0 || !isLinearWhiteSpace(value.charAt(offset))) {
       offset
     } else {
       findLastNonWhitespace(value, offset - 1)
     }
   }
+
+  /** @see https://tools.ietf.org/html/rfc2616#section-4.2 */
+  private def isLinearWhiteSpace(ch: Char): Boolean = ch == ' ' || ch == '\t'
 
 }
