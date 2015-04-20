@@ -1,4 +1,4 @@
-@(title: String, description: String, author: String)(mainContent: Html)@*
+@(title: String, description: String, author: prowse.domain.User)(mainContent: Html)@*
 *
 * Minimal markup for a standalone HTML document.
 *
@@ -9,7 +9,7 @@
     <title>@title</title>
     <meta name="description" content="@description"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="author" content="@author"/>
+    <meta name="author" content="@author.firstName @author.lastName <@author.email>"/>
     <meta name="robots" content="NOODP,NOYDIR"/>
 </head>
 <body>

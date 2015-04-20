@@ -3,21 +3,21 @@
 * Build information.
 * TODO: additional headers for alternate representation? (json)
 *@@pageTemplate(
-    buildinfo.BuildInfo.name + " buildInfo",
-    buildinfo.BuildInfo.name + " build information",
-    "Cory Prowse"
+    prowse.domain.BuildInfo.name + " buildInfo",
+    prowse.domain.BuildInfo.name + " build information",
+    prowse.domain.User("cosmic", "Cory", "Prowse", "cory@prowse.com", "https://plus.google.com/+CoryProwse")
 ) {
-<dl>
-    <dt>Name</dt>
-    <dd>@buildinfo.BuildInfo.name</dd>
+    <dl>
+        <dt>Name</dt>
+        <dd>@prowse.domain.BuildInfo.name</dd>
 
-    <dt>Version</dt>
-    <dd>@buildinfo.BuildInfo.version</dd>
+        <dt>Version</dt>
+        <dd>@prowse.domain.BuildInfo.version</dd>
 
-    <dt>gitChecksum</dt>
-    <dd>@buildinfo.BuildInfo.gitChecksum</dd>
+        <dt>gitChecksum</dt>
+        <dd>@prowse.domain.BuildInfo.gitChecksum</dd>
 
-    <dt>buildInstant</dt>
-    <dd>@views.ViewUtils.timeElement(java.time.Instant.parse(buildinfo.BuildInfo.buildInstant).atZone(java.time.ZoneId.of("GMT")))</dd>
-</dl>
+        <dt>buildInstant</dt>
+        <dd>@views.ViewUtils.timeElement(java.time.Instant.parse(prowse.domain.BuildInfo.buildInstant).atZone(java.time.ZoneId.of("GMT")))</dd>
+    </dl>
 }

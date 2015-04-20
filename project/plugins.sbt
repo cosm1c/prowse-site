@@ -18,9 +18,9 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.8")
 //addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.0.0")
 
 // sbt-buildinfo
-addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.3.2")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.4.0")
 
 // sbt-git
 resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.4")
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.0")

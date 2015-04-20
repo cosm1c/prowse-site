@@ -5,9 +5,24 @@ name := """prowse-site"""
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+scalaVersion := "2.11.6"
 
-scalaVersion := "2.11.5"
+lazy val root = (project in file(".")).
+  enablePlugins(BuildInfoPlugin, PlayScala).
+  settings(
+    buildInfoPackage := "prowse.domain",
+    buildInfoKeys := Seq[BuildInfoKey](
+      name,
+      version,
+      scalaVersion,
+      sbtVersion,
+      BuildInfoKey.action("buildInstant") {
+        java.time.format.DateTimeFormatter.ISO_INSTANT.format(java.time.Instant.now())
+      },
+      BuildInfoKey.action("gitChecksum") {
+        com.typesafe.sbt.git.ConsoleGitRunner.apply("rev-parse", "HEAD")(new java.io.File(System.getProperty("user.dir")))
+      })
+  )
 
 libraryDependencies ++= Seq(
   ws,
@@ -18,25 +33,14 @@ libraryDependencies ++= Seq(
 
 packageArchetype.java_server
 
-maintainer := "Cory Prowse <cory@prowse.com>"
+maintainer in Docker := "Cory Prowse <cory@prowse.com>"
 
-dockerBaseImage := "dockerfile/java:oracle-java8"
+dockerBaseImage in Docker := "dockerfile/java:oracle-java8"
 
 dockerExposedPorts in Docker := Seq(9000, 9443)
 
-//------------------------------------------------------------------------------
+packageSummary in Docker := "Prowse website"
 
-buildInfoSettings
+packageDescription := "A test area for computer technology."
 
-sourceGenerators in Compile <+= buildInfo
-
-buildInfoKeys := Seq[BuildInfoKey](
-  name,
-  version,
-  BuildInfoKey.action("buildInstant") {
-    java.time.format.DateTimeFormatter.ISO_INSTANT.format(java.time.Instant.now())
-  },
-  BuildInfoKey.action("gitChecksum") {
-    com.typesafe.sbt.git.ConsoleGitRunner.apply("rev-parse", "HEAD")(new java.io.File(System.getProperty("user.dir")))
-  }
-)
+buildInfoOptions += BuildInfoOption.ToJson

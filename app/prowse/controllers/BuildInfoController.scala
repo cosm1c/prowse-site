@@ -1,15 +1,13 @@
 package prowse.controllers
 
-import java.time.{Instant, ZoneId, ZonedDateTime}
-
-import buildinfo.BuildInfo
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
 import play.api.mvc.Controller
+import prowse.domain.BuildInfo
+import prowse.domain.BuildInfoHelper.buildDateTime
 import prowse.http.Cacheable._
 import prowse.http.PlayCacheable._
 import prowse.http.StrongETag
-import prowse.domain.BuildInfoHelper.buildDateTime
 
 object BuildInfoController extends Controller {
 

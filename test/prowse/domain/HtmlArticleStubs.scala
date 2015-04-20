@@ -24,7 +24,7 @@ object HtmlArticleStubs {
   val simpleTextArticleHtml: Html = pageTemplate.render(
     simpleTextArticle.title,
     simpleTextArticle.description,
-    simpleTextArticle.author.email,
+    simpleTextArticle.author,
     Html(simpleTextArticle.htmlContent)
   )
 

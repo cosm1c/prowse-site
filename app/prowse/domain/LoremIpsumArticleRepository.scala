@@ -2,7 +2,6 @@ package prowse.domain
 
 import java.time.{ZoneId, ZonedDateTime}
 
-import buildinfo.BuildInfo
 import com.google.common.base.Charsets
 import com.google.common.hash.Hashing
 import prowse.domain.BuildInfoHelper.buildDateTime

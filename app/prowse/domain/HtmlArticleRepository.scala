@@ -50,6 +50,6 @@ object HtmlArticleRepository {
 
   def articleToCacheableHtml(article: HtmlArticle): CacheableContent[Html] =
     StaticCacheableContent(article.eTag, article.dateModified,
-      pageTemplate.apply(article.title, article.description, article.author.email)(Html(article.htmlContent)))
+      pageTemplate.apply(article.title, article.description, article.author)(Html(article.htmlContent)))
 
 }
