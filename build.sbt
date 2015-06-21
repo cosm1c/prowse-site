@@ -21,6 +21,11 @@ lazy val commonSettings = Seq(
     "-Ywarn-dead-code"
   ),
 
+  libraryDependencies ++= Seq(
+    "nl.grons" %% "metrics-scala" % "3.5.1_a2.3",
+    "io.dropwizard.metrics" % "metrics-graphite" % "3.1.2"
+  ),
+
   // Build Info
   buildInfoOptions += BuildInfoOption.ToJson,
   buildInfoPackage := "prowse.domain",
@@ -53,8 +58,6 @@ lazy val root = (project in file("."))
     resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
 
     libraryDependencies ++= Seq(
-      "nl.grons" %% "metrics-scala" % "3.5.1_a2.3",
-      "io.dropwizard.metrics" % "metrics-graphite" % "3.1.2",
       ws % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % "test",
       specs2 % Test,
