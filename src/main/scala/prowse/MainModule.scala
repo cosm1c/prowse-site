@@ -7,6 +7,6 @@ class MainModule extends AbstractModule {
   def configure() = {
 
     bind(classOf[HtmlArticleRepository])
-      .to(classOf[LoremIpsumArticleRepository]).asEagerSingleton
+      .to(classOf[LoremIpsumArticleRepository]).asEagerSingleton()
   }
 }
