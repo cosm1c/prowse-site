@@ -2,34 +2,41 @@ package prowse.metrics
 
 import java.util.concurrent.TimeUnit
 
-import com.codahale.metrics.MetricFilter
 import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
+import com.codahale.metrics.{MetricFilter, MetricRegistry}
 import play.Logger
 import play.api.Play.{configuration, current}
 
 object MetricsApplication {
-  val registry = new com.codahale.metrics.MetricRegistry()
+
+  lazy val registry = initialiseMetrics
 
   private val metricsGraphiteHostnameKey: String = "metrics.graphite.hostname"
 
-  // TODO: Consider using PickledGraphite for improved performance?
-  val graphite: Option[Graphite] = configuration.getString(metricsGraphiteHostnameKey).filterNot(_.isEmpty)
-    .map(new Graphite(_, configuration.getInt("metrics.graphite.port").get))
+  def initialiseMetrics: MetricRegistry = {
+    val reg: MetricRegistry = new MetricRegistry()
 
-  val reporter: Option[GraphiteReporter] = graphite.map(
-    GraphiteReporter.forRegistry(MetricsApplication.registry)
-      .prefixedWith(configuration.getString("metrics.prefix").get)
-      .convertRatesTo(TimeUnit.SECONDS)
-      .convertDurationsTo(TimeUnit.MILLISECONDS)
-      .filter(MetricFilter.ALL)
-      .build)
+    val maybeMetricsHostname: Option[String] = configuration.getString(metricsGraphiteHostnameKey).filterNot(_.isEmpty)
 
-  reporter.foreach(_.start(10, TimeUnit.SECONDS))
+    if (maybeMetricsHostname.isEmpty) {
+      Logger.warn( s"""Graphite reporting disabled as no "$metricsGraphiteHostnameKey" provided""")
 
-  if (reporter.isDefined)
-    Logger.warn( s"""Graphite reporting initialised to host "${configuration.getString(metricsGraphiteHostnameKey).get}"""")
-  else
-    Logger.warn( s"""Graphite reporting disabled as no "$metricsGraphiteHostnameKey" provided""")
+    } else {
+      maybeMetricsHostname.map(
+        new Graphite(_, configuration.getInt("metrics.graphite.port").get)).map(
+          GraphiteReporter.forRegistry(reg)
+            .prefixedWith(configuration.getString("metrics.prefix").get)
+            .convertRatesTo(TimeUnit.SECONDS)
+            .convertDurationsTo(TimeUnit.MILLISECONDS)
+            .filter(MetricFilter.ALL)
+            .build
+        ).foreach(_.start(10, TimeUnit.SECONDS))
+
+      Logger.info( s"""Graphite reporting initialised to host "${configuration.getString(metricsGraphiteHostnameKey).get}"""")
+    }
+
+    reg
+  }
 }
 
 trait Instrumented extends nl.grons.metrics.scala.InstrumentedBuilder {
