@@ -3,11 +3,11 @@ package prowse.http
 import java.time.ZonedDateTime
 
 import org.specs2.Specification
-import org.specs2.execute.{Failure, Result}
+import org.specs2.execute.{AsResult, Failure, Result}
 import play.api.Play.current
 import play.api.http.HeaderNames
 import play.api.http.Status._
-import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
+import play.api.libs.ws.{WSRequest, WS, WSResponse}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Helpers}
 
 import scala.util.{Success, Try}
@@ -16,8 +16,8 @@ abstract class HttpConditionSpecification extends Specification with DefaultAwai
 
   protected val okPath: String
   protected val missingPath: Option[String]
-
-  override def is = s2""" ${ s"""Http Conditional Support for existing path "$okPath" and missing path "$missingPath"""".title}
+  override def is = s"""Http Conditional Support for existing path "$okPath" and missing path "$missingPath"""".title ^
+    s2"""
     http://tools.ietf.org/html/draft-ietf-httpbis-p4-conditional
 
     http://tools.ietf.org/html/draft-ietf-httpbis-p4-conditional#section-2.4
@@ -89,7 +89,7 @@ abstract class HttpConditionSpecification extends Specification with DefaultAwai
   """
 
   private val port: Int = Helpers.testServerPort
-  private lazy val request: WSRequestHolder = WS.url(s"http://localhost:$port/$okPath")
+  private lazy val request: WSRequest = WS.url(s"http://localhost:$port/$okPath")
 
   // TODO: Cleanup this repetitive (non-DRY), unmaintainable, unreadable, ugly code (see: HttpReadSpecification TODO)
 

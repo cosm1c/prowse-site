@@ -13,7 +13,8 @@ abstract class HttpReadSpecification extends Specification with DefaultAwaitTime
   protected val okPath: String
   protected val missingPath: Option[String]
 
-  override def is = s2""" ${ s"""Http Read Support for existing path "$okPath" and missing path "$missingPath"""".title}
+  override def is = s"""Http Read Support for existing path "$okPath" and missing path "$missingPath"""" ^
+    s2"""
     http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics
 
     http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics#section-4.1

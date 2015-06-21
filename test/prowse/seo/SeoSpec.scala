@@ -1,8 +1,8 @@
 package prowse.seo
 
 import org.specs2.Specification
+import org.specs2.specification.core.Fragments
 import org.specs2.matcher.XmlMatchers
-import org.specs2.specification.Fragments
 import play.api.Play.current
 import play.api.http.HeaderNames
 import play.api.libs.ws.{WS, WSResponse}
@@ -14,7 +14,7 @@ import scala.xml.parsing.ConstructingParser
 import scala.xml.{Elem, XML}
 
 class SeoSpec extends Specification with DefaultAwaitTimeout with FutureAwaits with HeaderNames with HttpHelpers with XmlMatchers with PlayServerRunning {
-  override def is: Fragments =
+  override def is =
     s2"""
     crossdomain.xml
       exists                                      $hasCrossDomainXml

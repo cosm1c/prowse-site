@@ -1,11 +1,6 @@
-import com.typesafe.sbt.SbtNativePackager.NativePackagerKeys._
-import com.typesafe.sbt.SbtNativePackager._
-
 name := """prowse-site"""
 
 version := "1.0-SNAPSHOT"
-
-scalaVersion := "2.11.6"
 
 lazy val root = (project in file(".")).
   enablePlugins(BuildInfoPlugin, PlayScala).
@@ -24,14 +19,27 @@ lazy val root = (project in file(".")).
       })
   )
 
+scalaVersion := "2.11.6"
+
+// -Yrangepos is for specs2
+scalacOptions in Test ++= Seq("-Yrangepos")
+
+//enablePlugins(JavaAppPackaging)
+
 libraryDependencies ++= Seq(
   ws,
-  "com.google.inject" % "guice" % "3.0",
-  "javax.inject" % "javax.inject" % "1",
   "org.mockito" % "mockito-core" % "1.10.19" % "test"
 )
 
-packageArchetype.java_server
+libraryDependencies += specs2 % Test
+
+libraryDependencies += "org.specs2" % "specs2-matcher-extra_2.11" % "3.6"
+
+resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+
+// Play provides two styles of routers, one expects its actions to be injected, the
+// other, legacy style, accesses its actions statically.
+routesGenerator := InjectedRoutesGenerator
 
 maintainer in Docker := "Cory Prowse <cory@prowse.com>"
 

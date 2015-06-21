@@ -1,5 +1,7 @@
 package prowse.controllers
 
+import javax.inject.Singleton
+
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
 import play.api.mvc.Controller
@@ -9,7 +11,8 @@ import prowse.http.Cacheable._
 import prowse.http.PlayCacheable._
 import prowse.http.StrongETag
 
-object BuildInfoController extends Controller {
+@Singleton
+class BuildInfoController extends Controller {
 
   val jsonResponseContent: JsValue =
     toJson(

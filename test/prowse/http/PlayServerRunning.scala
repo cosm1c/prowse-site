@@ -1,12 +1,12 @@
 package prowse.http
 
 import org.specs2.SpecificationLike
-import org.specs2.specification.{Fragments, Step}
+import org.specs2.specification.core.Fragments
 import play.api.test.{Helpers, TestServer}
 
 trait PlayServerRunning extends SpecificationLike {
 
-  override def map(fs: => Fragments): Fragments = Step(beforeAll()) ^ fs ^ Step(afterAll())
+  override def map(fs: => Fragments): Fragments = step(beforeAll()) ^ fs ^ step(afterAll())
 
   private lazy val server = createTestServer
 
