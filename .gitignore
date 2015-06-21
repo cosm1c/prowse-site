@@ -33,3 +33,4 @@ lib_managed/
 src_managed/
 .scala_dependencies
 .worksheet
+.DS_Store
