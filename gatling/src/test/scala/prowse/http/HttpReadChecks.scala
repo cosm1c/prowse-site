@@ -33,8 +33,8 @@ class HttpReadChecks extends Simulation {
 
   def scnHttpRead =
     scenario("Http Read Specification - https://tools.ietf.org/html/rfc7231")
-      .foreach(pathsThatExist, HttpSemanticsAndContents.PATH_KEY)(exec(HttpConditionalRequests.withExistingPaths))
-      .foreach(pathsThatDoNotExist, HttpSemanticsAndContents.PATH_KEY)(exec(HttpConditionalRequests.withMissingPaths))
+      .foreach(pathsThatExist, HttpSemanticsAndContents.PATH_KEY)(exec(HttpSemanticsAndContents.withExistingPaths))
+      .foreach(pathsThatDoNotExist, HttpSemanticsAndContents.PATH_KEY)(exec(HttpSemanticsAndContents.withMissingPaths))
 
   setUp(
     scnHttpRead.inject(
