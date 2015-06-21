@@ -5,6 +5,10 @@
 # Home page
 #GET     /                           controllers.Application.index
 
+GET        /websocket              prowse.controllers.WebSocketController.socket
+
+GET        /chat                   prowse.controllers.ChatController.get
+
 # BuildInfo - build information (prefer one Content-Type per uri)
 GET        /buildInfo              prowse.controllers.BuildInfoController.getBuildInfoJson
 GET        /buildInfo.html         prowse.controllers.BuildInfoController.getBuildInfoHtml

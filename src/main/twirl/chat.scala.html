@@ -1,0 +1,18 @@
+@()
+@pageTemplate(
+    "Realtime Chat",
+    "Realtime chat",
+    prowse.domain.User("cosmic", "Cory", "Prowse", "cory@prowse.com", "https://plus.google.com/+CoryProwse")) {
+    <h1>Realtime Chat</h1>
+    <div ng-controller="ChatCtrl">
+        <ul>
+            <li ng-repeat="message in messages track by $index">{{message}}</li>
+        </ul>
+
+        <form ng-submit="sendMessage()">
+            <input type="text" ng-model="messageText" placeholder="Type your message here" autofocus="true" />
+            <input type="submit" value="Send" />
+        </form>
+    </div>
+    <script data-main="@routes.Assets.versioned("javascripts/main.js")" src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
+}

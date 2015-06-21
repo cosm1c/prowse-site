@@ -58,11 +58,22 @@ lazy val root = (project in file("."))
     resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
 
     libraryDependencies ++= Seq(
+      // WebJars (i.e. client-side) dependencies
+      "org.webjars" % "requirejs" % "2.1.18",
+      "org.webjars" % "lodash" % "3.6.0",
+      "org.webjars" % "jquery" % "2.1.4",
+      "org.webjars" % "bootstrap" % "3.3.4" exclude("org.webjars", "jquery"),
+      "org.webjars" % "angularjs" % "1.4.0" exclude("org.webjars", "jquery"),
+
       ws % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % "test",
       specs2 % Test,
       "org.specs2" % "specs2-matcher-extra_2.11" % "3.6"
     ),
+
+    pipelineStages := Seq(rjs, digest, gzip),
+
+    RjsKeys.paths += ("jsRoutes" -> ("/jsroutes" -> "empty:")),
 
     routesGenerator := InjectedRoutesGenerator,
 
