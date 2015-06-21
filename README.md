@@ -3,6 +3,25 @@ prowse-site - seed project  [![Build Status](https://travis-ci.org/cosm1c/prowse
 
 Seed project for creating new web applications with Play! Framework.
 
+h1. Environment variables
+
+To report metrics to a Graphite server:
+ * `GRAPHITE_PORT_2003_TCP_ADDR` - Carbon line receiver host
+ * `GRAPHITE_PORT_2003_TCP_PORT` - Carbon line receiver port
+
+h1. Example Docker run commands
+
+An example when using the [Grafana Docker Dev Env Image](https://github.com/grafana/grafana-docker-dev-env)
+
+First run Grafana container
+> `docker run --rm --name graphite -p 10080:80 -p 10081:81 -p 19200:9200 -p 12003:2003 gfdev-image:latest`
+
+Then run a packaged docker image of this project (`docker:publishLocal`):
+> `docker run -p 9000:9000 --rm --link graphite:graphite prowse-site:1.0-SNAPSHOT`
+
+Change History
+==============
+
 # First Milestone - HTTP spec compliance
  * Support HTTP spec for simple read requests, see: [RFC7231](https://tools.ietf.org/html/rfc7231)
  * Support HTTP spec for conditional read requests, see: [RFC7232](https://tools.ietf.org/html/rfc7232)
