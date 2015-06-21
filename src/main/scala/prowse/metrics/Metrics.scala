@@ -13,7 +13,7 @@ object MetricsApplication {
   private val metricsGraphiteHostnameKey: String = "metrics.graphite.hostname"
 
   // TODO: Consider using PickledGraphite for improved performance?
-  val graphite: Option[Graphite] = configuration.getString(metricsGraphiteHostnameKey)
+  val graphite: Option[Graphite] = configuration.getString(metricsGraphiteHostnameKey).filterNot(_.isEmpty)
     .map(new Graphite(_, configuration.getInt("metrics.graphite.port").get))
 
   val reporter: Option[GraphiteReporter] = graphite.map(
@@ -27,9 +27,9 @@ object MetricsApplication {
   reporter.foreach(_.start(10, TimeUnit.SECONDS))
 
   if (reporter.isDefined)
-    Logger.warn(s"Graphite reporting initialised to host $metricsGraphiteHostnameKey")
+    Logger.warn( s"""Graphite reporting initialised to host "${configuration.getString(metricsGraphiteHostnameKey).get}"""")
   else
-    Logger.warn(s"Graphite reporting disabled as no $metricsGraphiteHostnameKey provided")
+    Logger.warn( s"""Graphite reporting disabled as no "$metricsGraphiteHostnameKey" provided""")
 }
 
 trait Instrumented extends nl.grons.metrics.scala.InstrumentedBuilder {
