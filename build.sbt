@@ -61,7 +61,7 @@ lazy val root = (project in file("."))
       ws % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % "test",
       specs2 % Test,
-      "org.specs2" % "specs2-matcher-extra_2.11" % "3.6"
+      "org.specs2" % "specs2-matcher-extra_2.11" % "3.6" % "test"
     ),
 
     routesGenerator := InjectedRoutesGenerator,
