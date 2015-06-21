@@ -19,3 +19,7 @@ Seed project for creating new web applications with Play! Framework.
 ## Endpoints
  * `/articles/*path` - provides content from repository (`loremIpsum` only article path)
 
+# Third Milestone - metrics capture and reporting
+ * use `gatling/test` for one pass performance testing
+ * use `gatling/gatling-it:test` for performance testing against a deployed instance as 
+   configured in `gatling/src/main/resources/gatling.conf`

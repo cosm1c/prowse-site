@@ -44,10 +44,14 @@ lazy val root = (project in file("."))
   .settings(commonSettings: _*)
   .settings(
     name := """prowse-site""",
+
     packageDescription := "A test area for computer technology.",
+
     // -Yrangepos is for specs2
     scalacOptions in Test ++= Seq("-Yrangepos"),
+
     resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
+
     libraryDependencies ++= Seq(
       ws % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % "test",
@@ -57,10 +61,10 @@ lazy val root = (project in file("."))
     routesGenerator := InjectedRoutesGenerator,
 
     // Docker
-    maintainer in Docker := "Cory Prowse <cory@prowse.com>",
-    dockerBaseImage in Docker := "dockerfile/java:oracle-java8",
-    dockerExposedPorts in Docker := Seq(9000, 9443),
-    packageSummary in Docker := "Prowse website"
+    packageSummary := "Prowse website",
+    maintainer := "Cory Prowse <cory@prowse.com>",
+    dockerBaseImage := "ingensi/oracle-jdk",
+    dockerExposedPorts := Seq(9000, 9443)
   )
 
 lazy val gatling = (project in file("gatling"))
