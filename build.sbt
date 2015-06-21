@@ -2,9 +2,10 @@ name := """prowse-site"""
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).
-  enablePlugins(BuildInfoPlugin, PlayScala).
-  settings(
+lazy val root = (project in file("."))
+  .enablePlugins(BuildInfoPlugin, PlayScala)
+  .disablePlugins(PlayLayoutPlugin)
+  .settings(
     buildInfoPackage := "prowse.domain",
     buildInfoKeys := Seq[BuildInfoKey](
       name,

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 import play.twirl.api.Html
 import prowse.http.StrongETag
-import views.html.pageTemplate
+import html.pageTemplate
 
 object HtmlArticleStubs {
 

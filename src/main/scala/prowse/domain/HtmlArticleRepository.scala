@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 import play.twirl.api.Html
 import prowse.http.Cacheable.{CacheableContent, StaticCacheableContent}
 import prowse.http.ETag
-import views.html.pageTemplate
+import html.pageTemplate
 
 import scala.concurrent.Future
 

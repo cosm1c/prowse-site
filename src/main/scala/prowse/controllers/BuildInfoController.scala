@@ -36,7 +36,7 @@ class BuildInfoController extends Controller {
     StaticCacheableContent(
       StrongETag(BuildInfo.gitChecksum),
       buildDateTime,
-      views.html.buildInfo.apply()
+      html.buildInfo.apply()
     )
   )
 
