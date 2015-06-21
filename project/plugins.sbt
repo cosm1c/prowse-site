@@ -24,3 +24,5 @@ addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.4.0")
 resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.4")
+
+addSbtPlugin("io.gatling" % "gatling-sbt" % "2.1.6")

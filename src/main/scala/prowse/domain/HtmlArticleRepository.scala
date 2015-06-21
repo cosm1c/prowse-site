@@ -25,7 +25,7 @@ import scala.concurrent.Future
  * @param eTag ETag for document (also @see Cacheable).
  * @param dateModified DateTime document was last modified (also @see Cacheable).
  * @param datePublished DateTime document was initially published.
- * @param title Title for html, should be limited to 65 characters, will need to be smaller if site adds text.
+ * @param title Title for html, should be between 15 and 60 characters long - including any site wide prefix/suffix.
  * @param description Description for html, should be limited to 156 characters.
  * @param author author of document - @see User
  * @param htmlContent Html content.
