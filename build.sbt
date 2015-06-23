@@ -22,6 +22,7 @@ lazy val commonSettings = Seq(
   ),
 
   libraryDependencies ++= Seq(
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
     "nl.grons" %% "metrics-scala" % "3.5.1_a2.3",
     "io.dropwizard.metrics" % "metrics-graphite" % "3.1.2"
   ),

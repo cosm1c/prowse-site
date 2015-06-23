@@ -4,35 +4,37 @@ import java.util.concurrent.TimeUnit
 
 import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
 import com.codahale.metrics.{MetricFilter, MetricRegistry}
-import play.Logger
-import play.api.Play.{configuration, current}
+import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 
 object MetricsApplication {
 
-  lazy val registry = initialiseMetrics
-
+  private[this] val logger = Logger(LoggerFactory.getLogger("name"))
+  private val configuration: Config = ConfigFactory.load();
   private val metricsGraphiteHostnameKey: String = "metrics.graphite.hostname"
 
-  def initialiseMetrics: MetricRegistry = {
+  lazy val registry = initialiseMetrics
+
+  private def initialiseMetrics: MetricRegistry = {
     val reg: MetricRegistry = new MetricRegistry()
 
-    val maybeMetricsHostname: Option[String] = configuration.getString(metricsGraphiteHostnameKey).filterNot(_.isEmpty)
+    val metricsHostname: String = configuration.getString(metricsGraphiteHostnameKey)
 
-    if (maybeMetricsHostname.isEmpty) {
-      Logger.warn( s"""Graphite reporting disabled as no "$metricsGraphiteHostnameKey" provided""")
+    if (metricsHostname.trim.isEmpty) {
+      logger.warn( s"""Graphite reporting disabled as no "$metricsGraphiteHostnameKey" provided""")
 
     } else {
-      maybeMetricsHostname.map(
-        new Graphite(_, configuration.getInt("metrics.graphite.port").get)).map(
-          GraphiteReporter.forRegistry(reg)
-            .prefixedWith(configuration.getString("metrics.prefix").get)
-            .convertRatesTo(TimeUnit.SECONDS)
-            .convertDurationsTo(TimeUnit.MILLISECONDS)
-            .filter(MetricFilter.ALL)
-            .build
-        ).foreach(_.start(10, TimeUnit.SECONDS))
+      val graphiteReporter: GraphiteReporter = GraphiteReporter.forRegistry(reg)
+        .prefixedWith(configuration.getString("metrics.prefix"))
+        .convertRatesTo(TimeUnit.SECONDS)
+        .convertDurationsTo(TimeUnit.MILLISECONDS)
+        .filter(MetricFilter.ALL)
+        .build(new Graphite(metricsHostname, configuration.getInt("metrics.graphite.port")))
 
-      Logger.info( s"""Graphite reporting initialised to host "${configuration.getString(metricsGraphiteHostnameKey).get}"""")
+      graphiteReporter.start(10, TimeUnit.SECONDS)
+
+      logger.info( s"""Graphite reporting initialised to host "$metricsHostname"""")
     }
 
     reg
