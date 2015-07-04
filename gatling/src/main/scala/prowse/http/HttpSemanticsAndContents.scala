@@ -27,7 +27,7 @@ object HttpSemanticsAndContents extends HttpHelpers {
             .check(
               status.is(200),
               header(ContentType).exists,
-              header(Date).transform(isValidHttpDate(_)).is(true),
+              header(Date).transform(isValidHttpDate).is(true),
               AllHeaders.saveAs(GET_HEADERS_KEY)
             )
         )
@@ -38,7 +38,7 @@ object HttpSemanticsAndContents extends HttpHelpers {
                 status.is(200),
                 bodyString.is(""),
                 header(ContentType).exists,
-                header(Date).transform(isValidHttpDate(_)).is(true),
+                header(Date).transform(isValidHttpDate).is(true),
                 AllHeaders.transform(_.deleteAll(nonMandatoryHeaderNames))
                   .is(session => session(GET_HEADERS_KEY).as[FluentCaseInsensitiveStringsMap].deleteAll(nonMandatoryHeaderNames)),
                 AllHeaders.transform(_.filterKeys(optionalHeaderNames.contains(_)))
@@ -55,7 +55,7 @@ object HttpSemanticsAndContents extends HttpHelpers {
           .get("${path}")
           .check(
             status.is(404),
-            header(Date).transform(isValidHttpDate(_)).is(true)
+            header(Date).transform(isValidHttpDate).is(true)
           )
       )
         .exec(
@@ -63,7 +63,7 @@ object HttpSemanticsAndContents extends HttpHelpers {
             .head("${path}")
             .check(
               status.is(404),
-              header(Date).transform(isValidHttpDate(_)).is(true)
+              header(Date).transform(isValidHttpDate).is(true)
             )
         )
     }

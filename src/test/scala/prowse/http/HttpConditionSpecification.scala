@@ -380,7 +380,7 @@ abstract class HttpConditionSpecification extends Specification with DefaultAwai
     hasCacheControlHeader.orSkip
 
     def countHeaderDirectives(response: WSResponse): Iterable[Int] =
-      groupDirectives(response.header(CACHE_CONTROL).get).map(_._2).map(_.length)
+      groupDirectives(response.header(CACHE_CONTROL).get).values.map(_.length)
 
     (responseFromGet.header(CACHE_CONTROL) must beSome) and
       (responseFromHead.header(CACHE_CONTROL) must beSome) and

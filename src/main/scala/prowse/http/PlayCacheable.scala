@@ -57,6 +57,7 @@ object PlayCacheable {
     val staticPreconditionCheck = preconditionCheck(content)(_: Request[AnyContent])
     val staticCacheValidationCheck = cacheValidationCheck(content)(_: Request[AnyContent])
 
+    // TODO: Investigate performance - closures being created per request?
     Action { request =>
       timeService.dateHeader {
         if (!staticPreconditionCheck(request))
@@ -74,6 +75,7 @@ object PlayCacheable {
       case Some(content) => resultIsCacheableContent(request, content)
       case None => resultIsMissing(request)
     }.map(timeService.dateHeader(_))
+    // TODO: timeService.dateHeader can't be a method value?
   }
 
   def conditionalAction[C: Writeable](block: => Option[CacheableContent[C]]): Action[AnyContent] = Action { request =>

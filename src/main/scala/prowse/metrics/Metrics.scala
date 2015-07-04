@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 object MetricsApplication {
 
   private[this] val logger = Logger(LoggerFactory.getLogger("name"))
-  private val configuration: Config = ConfigFactory.load();
+  private val configuration: Config = ConfigFactory.load()
   private val metricsGraphiteHostnameKey: String = "metrics.graphite.hostname"
 
   lazy val registry = initialiseMetrics

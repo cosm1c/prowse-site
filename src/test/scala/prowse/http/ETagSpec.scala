@@ -141,5 +141,5 @@ class ETagSpec extends Specification with matcher.DataTables {
     ETag.parseETagsHeader("asd*") must beEmpty
   }
 
-  private val allowedETagChars: String = new String((Seq(0x21) ++ Range(0x23, 0x7E).toSeq).map(_.toChar).toArray)
+  private val allowedETagChars: String = new String((Seq(0x21) ++ Range(0x23, 0x7E)).map(_.toChar).toArray)
 }
