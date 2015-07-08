@@ -1,15 +1,17 @@
 prowse-site - seed project  [![Build Status](https://travis-ci.org/cosm1c/prowse-site.svg?branch=master)](https://travis-ci.org/cosm1c/prowse-site)
 ==========================
 
-Seed project for creating new web applications with Play! Framework.
+Seed project for creating new web applications.
 
-h1. Environment variables
+Environment variables
+---------------------
 
-To report metrics to a Graphite server:
+Option to report metrics to a Graphite server:
  * `GRAPHITE_PORT_2003_TCP_ADDR` - Carbon line receiver host
  * `GRAPHITE_PORT_2003_TCP_PORT` - Carbon line receiver port
 
-h1. Example Docker run commands
+Example Docker run commands
+---------------------------
 
 An example when using the [Grafana Docker Dev Env Image](https://github.com/grafana/grafana-docker-dev-env)
 
@@ -18,6 +20,8 @@ First run Grafana container
 
 Then run a packaged docker image of this project (`docker:publishLocal`):
 > `docker run -p 9000:9000 --rm --link graphite:graphite prowse-site:1.0-SNAPSHOT`
+
+***
 
 Change History
 ==============
@@ -30,6 +34,8 @@ Change History
  * `/buildInfo` - provides JSON detailing current build
  * `/buildInfo.html` - provides HTML detailing current build
 
+***
+
 # Second Milestone - text only content from dependency injected repository
  * serve simple text content within existing html pageTemplate
  * integrate dependency injection
@@ -37,6 +43,8 @@ Change History
 
 ## Endpoints
  * `/articles/*path` - provides content from repository (`loremIpsum` only article path)
+
+***
 
 # Third Milestone - metrics capture and reporting
  * use `gatling/test` for one pass performance testing
