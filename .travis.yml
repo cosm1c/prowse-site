@@ -15,14 +15,14 @@ scala:
 jdk:
   - oraclejdk8
 
-env:
-  # This splits the build into two parts
-  matrix:
-    - TEST_COMMAND="test"
-    - TEST_COMMAND="gatling/test"
+#env:
+#  # This splits the build into multiple parts
+#  matrix:
+#    - TEST_COMMAND="test"
+#    - TEST_COMMAND="gatling/test"
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M "$TEST_COMMAND"
+  - sbt ++$TRAVIS_SCALA_VERSION -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M test gatling/test
 
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
