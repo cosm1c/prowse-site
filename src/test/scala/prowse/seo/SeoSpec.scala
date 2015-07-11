@@ -1,7 +1,7 @@
 package prowse.seo
 
 import java.io.{InputStream, StringReader}
-import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.parsers.{DocumentBuilderFactory, SAXParserFactory}
 
 import org.specs2.Specification
 import org.specs2.matcher.XmlMatchers
@@ -50,7 +50,13 @@ class SeoSpec extends Specification with DefaultAwaitTimeout with FutureAwaits w
   private def crossDomainXmlPermitsNone = {
     hasCrossDomainXml.orSkip
 
-    val xml: Elem = XML.loadString(crossdomainXmlResponse.body)
+    val f = SAXParserFactory.newInstance()
+    f.setNamespaceAware(false)
+    f.setValidating(false)
+    f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+
+    val xml: Elem = XML.withSAXParser(f.newSAXParser()).loadString(crossdomainXmlResponse.body)
+
     xml must beEqualToIgnoringSpace(
       <cross-domain-policy>
         <site-control permitted-cross-domain-policies="none"/>
