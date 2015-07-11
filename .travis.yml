@@ -16,10 +16,10 @@ jdk:
   - oraclejdk8
 
 env:
-  # This splits the build into two parts
+  # This splits the build into multiple parts
   matrix:
-    - TEST_COMMAND="test"
-    - TEST_COMMAND="gatling/test"
+    - TEST_COMMAND="test gatling/test"
+#    - TEST_COMMAND="gatling/test"
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M "$TEST_COMMAND"
