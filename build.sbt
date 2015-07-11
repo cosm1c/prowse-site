@@ -2,7 +2,6 @@ import com.typesafe.sbt.SbtNativePackager.autoImport._
 import play.sbt.PlayImport._
 import sbt.Keys._
 
-
 lazy val commonSettings = Seq(
   version := "1.0-SNAPSHOT",
 
@@ -40,7 +39,7 @@ lazy val commonSettings = Seq(
     },
     BuildInfoKey.action("gitChecksum") {
       // git describe would be better but requires annotations exist
-      com.typesafe.sbt.git.ConsoleGitRunner.apply("rev-parse", "HEAD")(new java.io.File(System.getProperty("user.dir")))
+      Process("git rev-parse HEAD").lines.head
     })
 )
 
@@ -55,8 +54,6 @@ lazy val root = (project in file("."))
 
     // -Yrangepos is for specs2
     scalacOptions in Test ++= Seq("-Yrangepos"),
-
-    resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
 
     libraryDependencies ++= Seq(
       ws % Test,
