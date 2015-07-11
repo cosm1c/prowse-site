@@ -20,9 +20,4 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.3")
 // sbt-buildinfo
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.4.0")
 
-// sbt-git
-resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.4")
-
 addSbtPlugin("io.gatling" % "gatling-sbt" % "2.1.6")
