@@ -1,0 +1,16 @@
+@()
+@pageTemplate(
+    "Ticker",
+    "Test Page",
+    prowse.domain.User("cosmic", "Cory", "Prowse", "cory@prowse.com", "https://plus.google.com/+CoryProwse")) {
+    <h1>Test Page</h1>
+    <p>Exploring using a ticker report for reporting realtime messages received from different streams.</p>
+
+    <p>Jitter (ms): <span id="displayJitter"></span></p>
+
+    <br/>
+
+    <canvas id="tickerCanvas" width="800" height="50"></canvas>
+
+    <script data-main="@routes.Assets.versioned("javascripts/main.js")" src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
+}

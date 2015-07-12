@@ -44,7 +44,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .enablePlugins(BuildInfoPlugin, PlayScala)
+  .enablePlugins(BuildInfoPlugin, PlayScala, SbtWeb)
   .disablePlugins(PlayLayoutPlugin)
   .settings(commonSettings: _*)
   .settings(
@@ -56,11 +56,26 @@ lazy val root = (project in file("."))
     scalacOptions in Test ++= Seq("-Yrangepos"),
 
     libraryDependencies ++= Seq(
+      "org.webjars" % "requirejs" % "2.1.18",
+      //"org.webjars" % "lodash" % "3.6.0",
+      //"org.webjars" % "jquery" % "2.1.4",
+      //"org.webjars" % "bootstrap" % "3.3.4" exclude("org.webjars", "jquery"),
+
+      "org.webjars" % "requirejs-node" % "2.1.18" % Test,
+      "org.webjars" % "chai" % "1.9.1" % Test,
       ws % Test,
-      "org.mockito" % "mockito-core" % "1.10.19" % "test",
+      "org.mockito" % "mockito-core" % "1.10.19" % Test,
       specs2 % Test,
-      "org.specs2" % "specs2-matcher-extra_2.11" % "3.6" % "test"
+      "org.specs2" % "specs2-matcher-extra_2.11" % "3.6" % Test
     ),
+
+    JsEngineKeys.engineType := JsEngineKeys.EngineType.Node,
+
+    MochaKeys.requires += "javascripts/Setup",
+
+    pipelineStages := Seq(rjs, digest, gzip),
+
+    RjsKeys.paths += ("jsRoutes" -> ("/jsroutes" -> "empty:")),
 
     routesGenerator := InjectedRoutesGenerator,
 
