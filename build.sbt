@@ -17,7 +17,11 @@ lazy val commonSettings = Seq(
     "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
     "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
     "-Ywarn-inaccessible",
-    "-Ywarn-dead-code"
+    "-Ywarn-dead-code",
+    "-Xfatal-warnings",
+    "-Yinline-warnings",
+    "-Yno-adapted-args",
+    "-Ywarn-numeric-widen"
   ),
 
   libraryDependencies ++= Seq(
@@ -59,7 +63,7 @@ lazy val root = (project in file("."))
       ws % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % "test",
       specs2 % Test,
-      "org.specs2" % "specs2-matcher-extra_2.11" % "3.6" % "test"
+      "org.specs2" % "specs2-matcher-extra_2.11" % "3.6.4" % "test"
     ),
 
     routesGenerator := InjectedRoutesGenerator,
@@ -78,7 +82,7 @@ lazy val gatling = (project in file("gatling"))
   .settings(
     libraryDependencies ++= Seq(
       "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.1.6",
-      "io.gatling" % "gatling-test-framework" % "2.1.6"
+      "io.gatling" % "gatling-test-framework" % "2.1.7"
     )
   )
   .dependsOn(root)

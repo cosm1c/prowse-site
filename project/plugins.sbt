@@ -18,6 +18,6 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.3")
 //addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.0.0")
 
 // sbt-buildinfo
-addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.4.0")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.5.0")
 
-addSbtPlugin("io.gatling" % "gatling-sbt" % "2.1.6")
+addSbtPlugin("io.gatling" % "gatling-sbt" % "2.1.7")

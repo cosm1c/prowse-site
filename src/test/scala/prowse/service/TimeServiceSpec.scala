@@ -21,7 +21,8 @@ class TimeServiceSpec extends Specification with Mockito {
 
   private val timeServiceComponent = new TimeServiceComponent {
     val timeService: TimeService = new TimeService {
-      override val clock: Clock = mock[Clock].instant() returns earlierTime thenReturns laterTime
+      private val mockClock = mock[Clock].instant() returns earlierTime thenReturns laterTime
+      override def clock: Clock = mockClock
     }
   }
 
