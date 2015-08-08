@@ -6,9 +6,10 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Controller
 import play.api.test.{FakeApplication, Helpers, TestServer}
 import prowse.http.Cacheable._
-import prowse.http.PlayCacheable._
 import prowse.http._
+import prowse.service.MockTimeService
 
+import scala.concurrent.Future
 import scala.language.reflectiveCalls
 
 class ExampleHttpConditionSpec extends HttpConditionSpecification with PlayServerRunning with HttpHelpers {
@@ -17,18 +18,24 @@ class ExampleHttpConditionSpec extends HttpConditionSpecification with PlayServe
   private val missingPathString: String = "missing"
   override val okPath: String = "exists"
   override val missingPath: Option[String] = Some(missingPathString)
+  implicit val timeService = MockTimeService
 
   private val controller = new Controller {
-    def exists = conditionalAction(
-      Some(StaticCacheableContent(
-        StrongETag("ETAGVALUE"),
-        lastModified,
-        Json.obj(
-          "hello" -> "world"
+    def exists = CacheableAction(
+      Future.successful(
+        Some(
+          StaticCacheableContent(
+            StrongETag("ETAGVALUE"),
+            lastModified,
+            Json.obj(
+              "hello" -> "world"
+            )
+          )
         )
-      )))
+      )
+    )
 
-    def missing = conditionalAction(missingContent)
+    def missing = CacheableAction(Future.successful(missingContent))
 
     private def missingContent: Option[CacheableContent[JsValue]] = None
   }

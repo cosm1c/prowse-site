@@ -4,12 +4,13 @@ import play.api.libs.json._
 import play.api.libs.ws.{WS, WSResponse}
 import play.api.mvc.Result
 import play.api.test.{FakeRequest, PlaySpecification, WithServer}
+import prowse.service.MockTimeService
 
 import scala.concurrent.Future
 
 class BuildInfoControllerSpec extends PlaySpecification {
 
-  val buildInfoController = new BuildInfoController()
+  val buildInfoController = new BuildInfoController()(MockTimeService)
 
   "BuildInfoController" should {
 

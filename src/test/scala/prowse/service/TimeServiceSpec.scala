@@ -19,30 +19,29 @@ class TimeServiceSpec extends Specification with Mockito {
   private val laterTime: Instant = LocalDateTime.of(2014, SEPTEMBER, 27, 4, 5, 2).toInstant(UTC)
   assert(earlierTime isBefore laterTime)
 
-  private val timeServiceComponent = new TimeServiceComponent {
-    val timeService: TimeService = new TimeService {
-      private val mockClock = mock[Clock].instant() returns earlierTime thenReturns laterTime
-      override def clock: Clock = mockClock
-    }
+  private val timeService: TimeService = new TimeService {
+    private val mockClock = mock[Clock].instant() returns earlierTime thenReturns laterTime
+
+    override def clock: Clock = mockClock
   }
 
   def currentTime = {
-    (timeServiceComponent.timeService.clock.instant() mustEqual earlierTime) and
-      (timeServiceComponent.timeService.clock.instant() mustEqual laterTime)
+    (timeService.clock.instant() mustEqual earlierTime) and
+      (timeService.clock.instant() mustEqual laterTime)
   }
 
   def parseDateString = {
     val validDateString = "Sun, 28 Sep 2014 10:02:35 GMT"
-    timeServiceComponent.timeService.parseDate(validDateString) must beSuccessfulTry
+    timeService.parseDate(validDateString) must beSuccessfulTry
   }
 
   def formatDateString = {
-    val formattedDateString = timeServiceComponent.timeService.formatHttpDate(earlierTime)
-    timeServiceComponent.timeService.parseDate(formattedDateString) must beSuccessfulTry
+    val formattedDateString = timeService.formatHttpDate(earlierTime)
+    timeService.parseDate(formattedDateString) must beSuccessfulTry
   }
 
   def failParseDateString = {
     val invalidDateString = "This is not a valid date"
-    timeServiceComponent.timeService.parseDate(invalidDateString) must beFailedTry
+    timeService.parseDate(invalidDateString) must beFailedTry
   }
 }

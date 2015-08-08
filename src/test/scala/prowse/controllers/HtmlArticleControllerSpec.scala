@@ -7,6 +7,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import prowse.domain.HtmlArticleRepository
 import prowse.domain.HtmlArticleStubs._
+import prowse.service.MockTimeService
 
 import scala.concurrent.Future
 
@@ -14,10 +15,10 @@ import scala.concurrent.Future
 class HtmlArticleControllerSpec extends Specification with Mockito {
 
   "HtmlArticleController" should {
+    val mockHtmlArticleRepository = mock[HtmlArticleRepository]
+    val htmlArticleController = new HtmlArticleController(mockHtmlArticleRepository, MockTimeService)
 
     "delegate to  injected repository" in {
-      val mockHtmlArticleRepository = mock[HtmlArticleRepository]
-      val htmlArticleController = new HtmlArticleController(mockHtmlArticleRepository)
       val path = "somePath"
 
       mockHtmlArticleRepository.findByPath(path) returns Future.successful(None)
@@ -28,8 +29,6 @@ class HtmlArticleControllerSpec extends Specification with Mockito {
     }
 
     "provide response from repository as request content" in {
-      val mockHtmlArticleRepository = mock[HtmlArticleRepository]
-      val htmlArticleController = new HtmlArticleController(mockHtmlArticleRepository)
       val path = "somePath"
 
       mockHtmlArticleRepository.findByPath(path) returns Future.successful(Some(simpleTextArticle))

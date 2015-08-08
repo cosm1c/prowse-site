@@ -5,25 +5,77 @@ import play.api.http.HeaderNames._
 import play.api.http.Writeable
 import play.api.mvc.Results._
 import play.api.mvc._
-import prowse.ComponentRegistry._
 import prowse.http.Cacheable._
+import prowse.service.{TimeOps, TimeService}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.language.experimental.macros
+import scala.language.higherKinds
 
-object PlayCacheable {
+trait CacheableActionBuilder[+R[_]] extends ActionFunction[Request, R] {
+  self =>
 
-  implicit object ConditionalQueryRequestContext extends ConditionalQuery[Request[AnyContent]] {
+  import prowse.http.PlayCacheable._
 
-    override def precondition(request: Request[AnyContent]): Option[QueryCondition] = parsePrecondition(request)
+  def apply[C: Writeable](block: => Future[Option[CacheableContent[C]]])(implicit timeService: TimeService): Action[AnyContent] = apply(_ => block)
 
-    override def cacheValidation(request: Request[AnyContent]): Option[QueryCondition] = parseCacheValidation(request)
+  def apply[C: Writeable](block: R[AnyContent] => Future[Option[CacheableContent[C]]])(implicit timeService: TimeService): Action[AnyContent] = apply(BodyParsers.parse.default)(block)
+
+  def apply[A, C: Writeable](bodyParser: BodyParser[A])(block: R[A] => Future[Option[CacheableContent[C]]])(implicit timeService: TimeService): Action[A] =
+    composeAction(new Action[A] {
+      def parser = composeParser(bodyParser)
+
+      private def procResponse(request: Request[_], futureMaybeContent: Future[Option[CacheableContent[C]]]): Future[Result] = {
+        futureMaybeContent.map(maybeContent =>
+          timeService.dateHeader(processConditional(request, maybeContent))
+        )(CacheableActionBuilder.this.executionContext)
+      }
+
+      def apply(request: Request[A]) = try {
+        invokeBlock(request, block.andThen(procResponse(request, _)))
+      } catch {
+        // NotImplementedError is not caught by NonFatal, wrap it
+        case e: NotImplementedError => throw new RuntimeException(e)
+        // LinkageError is similarly harmless in Play Framework, since automatic reloading could easily trigger it
+        case e: LinkageError => throw new RuntimeException(e)
+      }
+
+      override def executionContext = CacheableActionBuilder.this.executionContext
+    })
+
+  protected def composeParser[A](bodyParser: BodyParser[A]): BodyParser[A] = bodyParser
+
+  protected def composeAction[A](action: Action[A]): Action[A] = action
+
+  override def andThen[Q[_]](other: ActionFunction[R, Q]): ActionBuilder[Q] = new ActionBuilder[Q] {
+    def invokeBlock[A](request: Request[A], block: Q[A] => Future[Result]) =
+      self.invokeBlock[A](request, other.invokeBlock[A](_, block))
+
+    override protected def composeParser[A](bodyParser: BodyParser[A]): BodyParser[A] = self.composeParser(bodyParser)
+
+    override protected def composeAction[A](action: Action[A]): Action[A] = self.composeAction(action)
+  }
+}
+
+object CacheableAction extends CacheableActionBuilder[Request] {
+  private val logger = Logger(CacheableAction.getClass)
+
+  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]) = block(request)
+}
+
+object PlayCacheable extends TimeOps {
+
+  implicit val conditionalQueryRequest = new ConditionalQuery[Request[_]] {
+
+    override def precondition(request: Request[_]): Option[QueryCondition] = parsePrecondition(request)
+
+    override def cacheValidation(request: Request[_]): Option[QueryCondition] = parseCacheValidation(request)
 
     private val parsePrecondition = parseConditionalQueryHeaders(IF_MATCH, IF_UNMODIFIED_SINCE)(_)
 
     private val parseCacheValidation = parseConditionalQueryHeaders(IF_NONE_MATCH, IF_MODIFIED_SINCE)(_)
 
-    private def parseConditionalQueryHeaders(eTagHeaderName: String, lastModifiedHeaderName: String)(request: Request[AnyContent]) = {
+    private def parseConditionalQueryHeaders(eTagHeaderName: String, lastModifiedHeaderName: String)(request: Request[_]) = {
       val headers: Headers = request.headers
 
       def optionalETag: Option[QueryCondition] =
@@ -39,80 +91,43 @@ object PlayCacheable {
       optionalETag.orElse(optionalLastModified)
     }
 
-    private def parseLastModifiedHeaderValue(value: String): Option[LastModified] = timeService.parseDate(value).toOption
-
+    private def parseLastModifiedHeaderValue(value: String): Option[LastModified] = parseDate(value).toOption
   }
 
-  /**
-   * This action is only recommended to be stored as a val for reuse, otherwise use normal conditionalAction.
-   */
-  def staticConditionalAction[C: Writeable](content: CacheableContent[C]): Action[AnyContent] = {
-    Logger.logger.trace(s"Creating staticConditionalAction for content $content")
-
-    val responseHeaders = cachingHeadersFor(content)
-    val okResponse = Ok(content.content).withHeaders(responseHeaders: _*)
-    val notModifiedResponse = NotModified.withHeaders(responseHeaders: _*)
-    val preconditionFailedResponse = PreconditionFailed.withHeaders(responseHeaders: _*)
-
-    val staticPreconditionCheck = preconditionCheck(content)(_: Request[AnyContent])
-    val staticCacheValidationCheck = cacheValidationCheck(content)(_: Request[AnyContent])
-
-    // TODO: Investigate performance - closures being created per request?
-    Action { request =>
-      timeService.dateHeader {
-        if (!staticPreconditionCheck(request))
-          preconditionFailedResponse
-        else if (staticCacheValidationCheck(request))
-          notModifiedResponse
+  def processConditional[C: Writeable](request: Request[_], maybeContent: Option[CacheableContent[C]]): Result = {
+    def resultIsCacheableContent(content: CacheableContent[C]): Result = {
+      val result: Result =
+        if (!preconditionCheck(request, content))
+          PreconditionFailed
+        else if (cacheValidationCheck(request, content))
+          NotModified
         else
-          okResponse
-      }
+          Ok(content.content)
+
+      result.withHeaders(cachingHeadersFor(content): _*)
     }
-  }
 
-  def conditionalAsyncAction[C: Writeable](block: => Future[Option[CacheableContent[C]]]): Action[AnyContent] = Action.async { request =>
-    block.map {
-      case Some(content) => resultIsCacheableContent(request, content)
-      case None => resultIsMissing(request)
-    }.map(timeService.dateHeader(_))
-    // TODO: timeService.dateHeader can't be a method value?
-  }
-
-  def conditionalAction[C: Writeable](block: => Option[CacheableContent[C]]): Action[AnyContent] = Action { request =>
-    timeService.dateHeader {
-      block match {
-        case Some(content) => resultIsCacheableContent(request, content)
-        case None => resultIsMissing(request)
-      }
-    }
-  }
-
-  private def resultIsCacheableContent[C: Writeable](request: Request[AnyContent], content: CacheableContent[C]): Result = {
-    val result: Result =
-      if (!preconditionCheck(content)(request))
+    def resultIsMissing: Result = {
+      if (preconditionCheckWhenMissing(request))
         PreconditionFailed
-      else if (cacheValidationCheck(content)(request))
-        NotModified
       else
-        Ok(content.content)
+        NotFound
+    }
 
-    result.withHeaders(cachingHeadersFor(content): _*)
+    def cachingHeadersFor(content: CacheableContent[_]) =
+      Seq(
+        ETAG -> content.eTag.toString,
+        LAST_MODIFIED -> formatHttpDate(content.lastModified.toInstant),
+        // TODO: Cache-Control header should be dynamic (allow to change with server load)
+        // minimum retention of 1 second as that is resolution of HTTP dates
+        CACHE_CONTROL -> "max-age=1,s-maxage=1"
+      )
+
+    maybeContent match {
+      case Some(content) => resultIsCacheableContent(content)
+      case None => resultIsMissing
+    }
   }
 
-  private def resultIsMissing(request: Request[AnyContent]): Result = {
-    if (preconditionCheckWhenMissing(request))
-      PreconditionFailed
-    else
-      NotFound
-  }
-
-  private def cachingHeadersFor[C](content: CacheableContent[C]) =
-    Seq(
-      ETAG -> content.eTag.toString,
-      LAST_MODIFIED -> timeService.formatHttpDate(content.lastModified.toInstant),
-      // TODO: Cache-Control header should be dynamic (allow to change with server load)
-      // minimum retention of 1 second as that is resolution of HTTP dates
-      CACHE_CONTROL -> "max-age=1,s-maxage=1"
-    )
 
 }
