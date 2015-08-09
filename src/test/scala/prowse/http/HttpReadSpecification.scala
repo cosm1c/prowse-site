@@ -110,7 +110,7 @@ abstract class HttpReadSpecification extends Specification with DefaultAwaitTime
     }
 
     def optionalHeaders(response: WSResponse) = {
-      val includeHeaderNames = response.allHeaders.keySet.filter(!optionalHeaderNames.contains(_))
+      val includeHeaderNames = response.allHeaders.keySet.filter(optionalHeaderNames.contains(_))
       response.allHeaders.filter(elem => includeHeaderNames.contains(elem._1))
     }
 
