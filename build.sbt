@@ -18,7 +18,6 @@ lazy val commonSettings = Seq(
     "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
     "-Ywarn-inaccessible",
     "-Ywarn-dead-code",
-    "-Xfatal-warnings",
     "-Yinline-warnings",
     "-Yno-adapted-args",
     "-Ywarn-numeric-widen"
@@ -55,6 +54,9 @@ lazy val root = (project in file("."))
     name := """prowse-site""",
 
     packageDescription := "A test area for computer technology.",
+
+    // Cannot enable in Gatling due to "possible missing interpolator" warnings
+    scalacOptions ++= Seq("-Xfatal-warnings"),
 
     // -Yrangepos is for specs2
     scalacOptions in Test ++= Seq("-Yrangepos"),
