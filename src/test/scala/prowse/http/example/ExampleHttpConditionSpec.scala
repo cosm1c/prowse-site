@@ -1,6 +1,6 @@
 package prowse.http.example
 
-import java.time.ZonedDateTime
+import java.time.ZoneId
 
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Controller
@@ -14,11 +14,11 @@ import scala.language.reflectiveCalls
 
 class ExampleHttpConditionSpec extends HttpConditionSpecification with PlayServerRunning with HttpHelpers {
 
-  private val lastModified = ZonedDateTime.now
   private val missingPathString: String = "missing"
   override val okPath: String = "exists"
   override val missingPath: Option[String] = Some(missingPathString)
   implicit val timeService = MockTimeService
+  private val lastModified = timeService.clock.instant().atZone(ZoneId.of("GMT"))
 
   private val controller = new Controller {
     def exists = CacheableAction(
